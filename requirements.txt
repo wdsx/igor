@@ -1,0 +1,8 @@
+Flask==0.10.1
+boto==2.34.0
+pytest
+pytest-cov
+retrying
+pycrypto
+mock
+enum34

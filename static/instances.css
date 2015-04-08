@@ -1,0 +1,129 @@
+.list {
+  font-family:sans-serif;
+  margin:0;
+  padding:20px 0 0;
+}
+.list > li {
+  display:table-row;
+  background-color: #eee;
+  padding:10px;
+  box-shadow: inset 0 1px 0 #fff;
+  border-style:solid;
+  border-width:3px 0;
+  border-color:#FFFFFF;
+  padding:10px;
+}
+.avatar {
+  max-width: 150px;
+}
+img {
+  max-width: 100%;
+}
+
+.list > li p,  .list > li a {
+  display:table-cell;
+  padding: 0.5em 2em;
+
+}
+
+input {
+  border:solid 1px #ccc;
+  border-radius: 5px;
+  padding:7px 14px;
+  margin-bottom:10px
+}
+input:focus {
+  outline:none;
+  border-color:#aaa;
+}
+.sort {
+  padding:8px 30px;
+  border-radius: 6px;
+  border:none;
+  display:inline-block;
+  color:#fff;
+  text-decoration: none;
+  background-color: #28a8e0;
+  height:30px;
+}
+.sort:hover {
+  text-decoration: none;
+  background-color:#1b8aba;
+}
+.sort:focus {
+  outline:none;
+}
+.sort:after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  content:"";
+  position: relative;
+  top:-10px;
+  right:-5px;
+}
+.sort.asc:after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #fff;
+  content:"";
+  position: relative;
+  top:13px;
+  right:-5px;
+}
+.sort.desc:after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #fff;
+  content:"";
+  position: relative;
+  top:-10px;
+  right:-5px;
+}
+.pagination li {
+  display:inline-block;
+  padding:5px;
+}
+
+.pagination {
+  margin-left: auto;
+  margin-right: auto;
+  width:20%;
+}
+
+#instances {
+    margin-left: auto;
+    margin-right: auto;
+    width: 60%;
+    border-collapse:collapse;
+}
+
+body {
+   color: #555;
+}
+
+a:link {
+    color: #28a8e0;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #28a8e0;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #28a8e0;
+    text-decoration: none;
+}
+
+a:active {
+    color: #28a8e0;
+    text-decoration: none;
+}
