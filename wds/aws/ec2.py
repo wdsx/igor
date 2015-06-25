@@ -7,7 +7,7 @@ from wds.igor.initscript import Script
 import httplib
 from retrying import retry
 import datetime
-
+import dateutil.parser
 
 def create_and_start_instances(project):
     tenant = landlord.Tenant()
@@ -154,10 +154,15 @@ def get_all_instances(region='eu-west-1'):
 def get_auto_stop_candidates():
     instances = []
     returned_instances = get_instances()
+    currentHour = datetime.datetime.now().hour
+    
     for instance in returned_instances:
-        if instance.stopTime != 'NA' and int(instance.stopTime) <= datetime.datetime.now().hour:
+        launchTime = yourdate = dateutil.parser.parse(instance.launch_time)
+        
+        if instance.stopTime != 'NA' and int(instance.stopTime) <= currentHour and instance.state == 'running' and launchTime.hour < currentHour:
             instances.append({'name': instance.tags['Name'],
                           'version': instance.tags['Version'],
+                          'launchtime': launchTime,
                           'stopTime': instance.stopTime,
                           'project': instance.tags['Project'],
                           'date': instance.launch_time,

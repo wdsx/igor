@@ -445,6 +445,7 @@ class Ec2Test(unittest.TestCase):
     @mock.patch('wds.aws.ec2.landlord')        
     def test_when_we_get_auto_stop_candidates_the_correct_instances_are_returned(self, mock_landlord, mock_ec2):
         now = datetime.datetime.now()
+        fiveHoursAgo = datetime.datetime.now() - datetime.timedelta(hours=5)
 
         mock_landlord.Tenant = StubLandlord
         mock_connection = Mock()
@@ -457,7 +458,7 @@ class Ec2Test(unittest.TestCase):
         instance0.ip_address = '192.1.11.1'
         instance0.state = 'running'
         instance0.tags = {'Name': 'Instance0ShouldntStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
-        instance0.launch_time = now.isoformat()
+        instance0.launch_time = fiveHoursAgo.isoformat()
         instance0.image_id = 'ami-192812'
         instance0.stopTime = 'NA'
 
@@ -467,7 +468,7 @@ class Ec2Test(unittest.TestCase):
         instance1.ip_address = '192.1.11.1'
         instance1.state = 'running'
         instance1.tags = {'Name': 'Instance1ShouldStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
-        instance1.launch_time = now.isoformat()
+        instance1.launch_time = fiveHoursAgo.isoformat()
         instance1.image_id = 'ami-192812'
         instance1.stopTime = now.hour-1
 
@@ -475,9 +476,9 @@ class Ec2Test(unittest.TestCase):
         instance2.id = 'i-542211'
         instance2.dns_name = '192.5.5.5.dnsname'
         instance2.ip_address = '192.5.5.5'
-        instance2.state = 'stopped'
+        instance2.state = 'running'
         instance2.tags = {'Name': 'Instance2ShouldStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        instance2.launch_time = now.isoformat()
+        instance2.launch_time = fiveHoursAgo.isoformat()
         instance2.image_id = 'ami-237829'
         instance2.stopTime = now.hour
 
@@ -485,18 +486,40 @@ class Ec2Test(unittest.TestCase):
         instance3.id = 'i-542211'
         instance3.dns_name = '192.5.5.5.dnsname'
         instance3.ip_address = '192.5.5.5'
-        instance3.state = 'stopped'
+        instance3.state = 'running'
         instance3.tags = {'Name': 'Instance3ShouldntStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        instance3.launch_time = now.isoformat()
+        instance3.launch_time = fiveHoursAgo.isoformat()
         instance3.image_id = 'ami-237829'
         instance3.stopTime = now.hour+1
 
-        mock_connection.get_only_instances.return_value = [instance0, instance1, instance2, instance3]
+        instance4 = Mock()
+        instance4.id = 'i-542211'
+        instance4.dns_name = '192.5.5.5.dnsname'
+        instance4.ip_address = '192.5.5.5'
+        instance4.state = 'stopped'
+        instance4.tags = {'Name': 'Instance4AlreadyStopped', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
+        instance4.launch_time = fiveHoursAgo.isoformat()
+        instance4.image_id = 'ami-237829'
+        instance4.stopTime = now.hour-1
+
+        instance5 = Mock()
+        instance5.id = 'i-542211'
+        instance5.dns_name = '192.5.5.5.dnsname'
+        instance5.ip_address = '192.5.5.5'
+        instance5.state = 'running'
+        instance5.tags = {'Name': 'Instance4AlreadyStopped', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
+        instance5.launch_time = now.isoformat()
+        instance5.image_id = 'ami-237829'
+        instance5.stopTime = now.hour-1
+
+        mock_connection.get_only_instances.return_value = [instance0, instance1, instance2, instance3, instance4, instance5]
 
         instances = ec2.get_auto_stop_candidates()
 
         self.assertEquals(len(instances), 2)
         self.assertEquals(instances[0]['name'], 'Instance1ShouldStop')
         self.assertEquals(instances[0]['stopTime'], now.hour-1)
+        self.assertLess(instances[0]['launchtime'].hour, now.hour)
         self.assertEquals(instances[1]['name'], 'Instance2ShouldStop')
         self.assertEquals(instances[1]['stopTime'], now.hour)
+        self.assertLess(instances[1]['launchtime'].hour, now.hour)

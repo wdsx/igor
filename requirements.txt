@@ -6,3 +6,4 @@ retrying
 pycrypto
 mock
 enum34
+python-dateutil
