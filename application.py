@@ -53,6 +53,10 @@ def send_js(path):
 def healthcheck():
     return "It's alive!!"
 
+@app.route("/stopAutoStopCandidates")
+def stop_autostop_candidates():
+    igor.stop_auto_stop_candidates()
+
 if __name__ == "__main__":
     app.run(debug=True)
 

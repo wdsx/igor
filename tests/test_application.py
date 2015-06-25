@@ -57,3 +57,10 @@ class ApplicationTest(unittest.TestCase):
             mock_igor.deploy.assert_called_with(jobs[1])
             pop_last_call(mock_igor.deploy)
             mock_igor.deploy.assert_called_with(jobs[0])
+            
+    @mock.patch('application.igor')
+    def test_we_can_initiate_stopping_of_auto_instances(self, mock_igor):
+        app = Flask(__name__)
+        with app.test_request_context('/stopAutoStopCandidates'):
+              application.stop_autostop_candidates()
+              self.assertEquals(mock_igor.stop_auto_stop_candidates.call_count, 1)

@@ -2,7 +2,6 @@ from wds.aws import ec2, loadbalancer
 from wds.igor.environment_tier import EnvironmentTier
 from wds.igor.job import JobStatus
 
-
 def deploy(job):
     job.set_status(JobStatus.running)
     project_attributes = job.get_project()
