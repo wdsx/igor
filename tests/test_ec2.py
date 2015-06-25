@@ -3,8 +3,7 @@ from mock import Mock
 import mock
 from wds.aws import ec2
 from wds.persistence import persistence
-from datetime import date
-
+import datetime
 
 class StubLandlord():
     def load_properties(self):
@@ -266,7 +265,7 @@ class Ec2Test(unittest.TestCase):
         instance1.ip_address = '192.1.11.1'
         instance1.state = 'running'
         instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
-        instance1.launch_time = date.today().isoformat()
+        instance1.launch_time = datetime.date.today().isoformat()
         instance1.image_id = 'ami-192812'
 
         instance2 = Mock()
@@ -275,7 +274,7 @@ class Ec2Test(unittest.TestCase):
         instance2.ip_address = '192.5.5.5'
         instance2.state = 'stopped'
         instance2.tags = {'Name': 'Instance2', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        instance2.launch_time = date.today().isoformat()
+        instance2.launch_time = datetime.date.today().isoformat()
         instance2.image_id = 'ami-237829'
 
         mock_connection.get_only_instances.return_value = [instance1, instance2]
@@ -289,7 +288,7 @@ class Ec2Test(unittest.TestCase):
         self.assertEquals(instances[0]['name'], 'Instance-1')
         self.assertEquals(instances[0]['version'], 'v43')
         self.assertEquals(instances[0]['project'], 'Instance')
-        self.assertEquals(instances[0]['date'], date.today().isoformat())
+        self.assertEquals(instances[0]['date'], datetime.date.today().isoformat())
         self.assertEquals(instances[0]['ip'], '192.1.11.1')
         self.assertEquals(instances[0]['status'], 'running')
         self.assertEquals(instances[0]['ami'], 'ami-192812')
@@ -297,7 +296,7 @@ class Ec2Test(unittest.TestCase):
         self.assertEquals(instances[1]['name'], 'Instance2')
         self.assertEquals(instances[1]['version'], 'v43')
         self.assertEquals(instances[1]['project'], 'Instance')
-        self.assertEquals(instances[1]['date'], date.today().isoformat())
+        self.assertEquals(instances[1]['date'], datetime.date.today().isoformat())
         self.assertEquals(instances[1]['ip'], '192.5.5.5')
         self.assertEquals(instances[1]['status'], 'stopped')
         self.assertEquals(instances[1]['ami'], 'ami-237829')
@@ -315,14 +314,14 @@ class Ec2Test(unittest.TestCase):
         instance1.id = 'i-938372'
         instance1.ip_address = '192.1.11.1'
         instance1.state = 'running'
-        instance1.launch_time = date.today().isoformat()
+        instance1.launch_time = datetime.date.today().isoformat()
         instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
 
         instance2 = Mock()
         instance2.id = 'i-542211'
         instance2.state = 'stopped'
         instance2.ip_address = None
-        instance2.launch_time = date.today().isoformat()
+        instance2.launch_time = datetime.date.today().isoformat()
         instance2.tags = {'Name': 'STAGE-Instance-2', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
 
         mock_connection.get_only_instances.return_value = [instance1, instance2]
@@ -337,14 +336,14 @@ class Ec2Test(unittest.TestCase):
         self.assertEquals(instances[0]['version'], 'v43')
         self.assertEquals(instances[0]['stopTime'], '8')
         self.assertEquals(instances[0]['project'], 'Instance')
-        self.assertEquals(instances[0]['date'], date.today().isoformat())
+        self.assertEquals(instances[0]['date'], datetime.date.today().isoformat())
         self.assertEquals(instances[0]['ip'], '192.1.11.1')
         self.assertEquals(instances[0]['status'], 'running')
         self.assertEquals(instances[1]['name'], 'Instance-2')
         self.assertEquals(instances[1]['version'], 'v43')
         self.assertEquals(instances[1]['stopTime'], '9')
         self.assertEquals(instances[1]['project'], 'Instance')
-        self.assertEquals(instances[1]['date'], date.today().isoformat())
+        self.assertEquals(instances[1]['date'], datetime.date.today().isoformat())
         self.assertEquals(instances[1]['ip'], 'None')
         self.assertEquals(instances[1]['status'], 'stopped')
 
@@ -383,14 +382,14 @@ class Ec2Test(unittest.TestCase):
         instance1.id = 'i-938372'
         instance1.ip_address = '192.1.11.1'
         instance1.state = 'running'
-        instance1.launch_time = date.today().isoformat()
+        instance1.launch_time = datetime.date.today().isoformat()
         instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43'}
 
         instance2 = Mock()
         instance2.id = 'i-542211'
         instance2.state = 'stopped'
         instance2.ip_address = None
-        instance2.launch_time = date.today().isoformat()
+        instance2.launch_time = datetime.date.today().isoformat()
         instance2.tags = {'Name': 'STAGE-Instance-2', 'Project': 'Instance', 'Version': 'v43'}
 
         mock_connection.get_only_instances.return_value = [instance1, instance2]
@@ -420,14 +419,14 @@ class Ec2Test(unittest.TestCase):
         instance1.id = 'i-938372'
         instance1.ip_address = '192.1.11.1'
         instance1.state = 'running'
-        instance1.launch_time = date.today().isoformat()
+        instance1.launch_time = datetime.date.today().isoformat()
         instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43'}
 
         instance2 = Mock()
         instance2.id = 'i-542211'
         instance2.state = 'stopped'
         instance2.ip_address = None
-        instance2.launch_time = date.today().isoformat()
+        instance2.launch_time = datetime.date.today().isoformat()
         instance2.tags = {'Name': 'STAGE-Instance-2', 'Project': 'Instance', 'Version': 'v43'}
 
         mock_connection.get_only_instances.return_value = [instance1, instance2]
@@ -445,11 +444,12 @@ class Ec2Test(unittest.TestCase):
     @mock.patch('wds.aws.ec2.ec2')
     @mock.patch('wds.aws.ec2.landlord')        
     def test_when_we_get_auto_stop_candidates_the_correct_instances_are_returned(self, mock_landlord, mock_ec2):
-#         persistence.save('Instance1', 'v43')
-#         persistence.save('Instance2', 'v43')
+        now = datetime.datetime.now()
+
         mock_landlord.Tenant = StubLandlord
         mock_connection = Mock()
         mock_ec2.connect_to_region.return_value = mock_connection
+        
 
         instance0 = Mock()
         instance0.id = 'i-938372'
@@ -457,7 +457,7 @@ class Ec2Test(unittest.TestCase):
         instance0.ip_address = '192.1.11.1'
         instance0.state = 'running'
         instance0.tags = {'Name': 'Instance0ShouldntStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
-        instance0.launch_time = date.today().isoformat()
+        instance0.launch_time = now.isoformat()
         instance0.image_id = 'ami-192812'
         instance0.stopTime = 'NA'
 
@@ -467,9 +467,9 @@ class Ec2Test(unittest.TestCase):
         instance1.ip_address = '192.1.11.1'
         instance1.state = 'running'
         instance1.tags = {'Name': 'Instance1ShouldStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
-        instance1.launch_time = date.today().isoformat()
+        instance1.launch_time = now.isoformat()
         instance1.image_id = 'ami-192812'
-        instance1.stopTime = '17'
+        instance1.stopTime = now.hour-1
 
         instance2 = Mock()
         instance2.id = 'i-542211'
@@ -477,9 +477,9 @@ class Ec2Test(unittest.TestCase):
         instance2.ip_address = '192.5.5.5'
         instance2.state = 'stopped'
         instance2.tags = {'Name': 'Instance2ShouldStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        instance2.launch_time = date.today().isoformat()
+        instance2.launch_time = now.isoformat()
         instance2.image_id = 'ami-237829'
-        instance2.stopTime = '18'
+        instance2.stopTime = now.hour
 
         instance3 = Mock()
         instance3.id = 'i-542211'
@@ -487,9 +487,9 @@ class Ec2Test(unittest.TestCase):
         instance3.ip_address = '192.5.5.5'
         instance3.state = 'stopped'
         instance3.tags = {'Name': 'Instance3ShouldntStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        instance3.launch_time = date.today().isoformat()
+        instance3.launch_time = now.isoformat()
         instance3.image_id = 'ami-237829'
-        instance3.stopTime = '19'
+        instance3.stopTime = now.hour+1
 
         mock_connection.get_only_instances.return_value = [instance0, instance1, instance2, instance3]
 
@@ -497,6 +497,6 @@ class Ec2Test(unittest.TestCase):
 
         self.assertEquals(len(instances), 2)
         self.assertEquals(instances[0]['name'], 'Instance1ShouldStop')
-        self.assertEquals(instances[0]['stopTime'], '17')
+        self.assertEquals(instances[0]['stopTime'], now.hour-1)
         self.assertEquals(instances[1]['name'], 'Instance2ShouldStop')
-        self.assertEquals(instances[1]['stopTime'], '18')
+        self.assertEquals(instances[1]['stopTime'], now.hour)

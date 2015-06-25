@@ -6,6 +6,7 @@ from wds.persistence import persistence
 from wds.igor.initscript import Script
 import httplib
 from retrying import retry
+import datetime
 
 
 def create_and_start_instances(project):
@@ -154,7 +155,7 @@ def get_auto_stop_candidates():
     instances = []
     returned_instances = get_instances()
     for instance in returned_instances:
-        if instance.stopTime != 'NA' and int(instance.stopTime) < 18.1:
+        if instance.stopTime != 'NA' and int(instance.stopTime) <= datetime.datetime.now().hour:
             instances.append({'name': instance.tags['Name'],
                           'version': instance.tags['Version'],
                           'stopTime': instance.stopTime,
