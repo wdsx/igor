@@ -56,6 +56,7 @@ def healthcheck():
 @app.route("/stopAutoStopCandidates")
 def stop_autostop_candidates():
     igor.stop_auto_stop_candidates()
+    return "I've autostopped the candidate instances"
 
 if __name__ == "__main__":
     app.run(debug=True)

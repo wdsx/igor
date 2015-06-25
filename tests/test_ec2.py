@@ -512,7 +512,16 @@ class Ec2Test(unittest.TestCase):
         runningStopTimePassedButLaunchedSince.image_id = 'ami-237829'
         runningStopTimePassedButLaunchedSince.stopTime = now.hour-1
 
-        mock_connection.get_only_instances.return_value = [stopTimeNa, runningStopTimePassed, runningStopTimeJustPassed, runningButStopTimeNotPassed, stopTimePassedButNotRunning, runningStopTimePassedButLaunchedSince]
+        noStopTimeDefinedAtAll = Mock()
+        noStopTimeDefinedAtAll.id = 'i-542211'
+        noStopTimeDefinedAtAll.dns_name = '192.5.5.5.dnsname'
+        noStopTimeDefinedAtAll.ip_address = '192.5.5.5'
+        noStopTimeDefinedAtAll.state = 'running'
+        noStopTimeDefinedAtAll.tags = {'Name': 'Instance4AlreadyStopped', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
+        noStopTimeDefinedAtAll.launch_time = now.isoformat()
+        noStopTimeDefinedAtAll.image_id = 'ami-237829'
+
+        mock_connection.get_only_instances.return_value = [stopTimeNa, runningStopTimePassed, runningStopTimeJustPassed, runningButStopTimeNotPassed, stopTimePassedButNotRunning, runningStopTimePassedButLaunchedSince, noStopTimeDefinedAtAll]
 
         instances = ec2.get_auto_stop_candidates()
 

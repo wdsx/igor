@@ -159,8 +159,9 @@ def get_auto_stop_candidates():
     for instance in returned_instances:
         launchTime = yourdate = dateutil.parser.parse(instance.launch_time)
         
-        if instance.stopTime != 'NA' and int(instance.stopTime) <= currentHour and instance.state == 'running' and launchTime.hour < currentHour:
-            instances.append({'name': instance.tags['Name'],
+        try:
+            if instance.stopTime != 'NA' and int(instance.stopTime) <= currentHour and instance.state == 'running' and launchTime.hour < currentHour:
+                instances.append({'name': instance.tags['Name'],
                           'version': instance.tags['Version'],
                           'launchtime': launchTime,
                           'stopTime': instance.stopTime,
@@ -169,6 +170,8 @@ def get_auto_stop_candidates():
                           'ip': instance.ip_address or "None",
                           'ami': instance.image_id,
                           'status': instance.state})
+        except:
+            instances = instances
             
     return instances
 
