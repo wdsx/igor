@@ -441,3 +441,62 @@ class Ec2Test(unittest.TestCase):
         self.assertEquals(False, result)
 
         ec2.check_url = real_function
+        
+    @mock.patch('wds.aws.ec2.ec2')
+    @mock.patch('wds.aws.ec2.landlord')        
+    def test_when_we_get_auto_stop_candidates_the_correct_instances_are_returned(self, mock_landlord, mock_ec2):
+#         persistence.save('Instance1', 'v43')
+#         persistence.save('Instance2', 'v43')
+        mock_landlord.Tenant = StubLandlord
+        mock_connection = Mock()
+        mock_ec2.connect_to_region.return_value = mock_connection
+
+        instance0 = Mock()
+        instance0.id = 'i-938372'
+        instance0.dns_name = '192.1.11.1.dnsname'
+        instance0.ip_address = '192.1.11.1'
+        instance0.state = 'running'
+        instance0.tags = {'Name': 'Instance0ShouldntStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
+        instance0.launch_time = date.today().isoformat()
+        instance0.image_id = 'ami-192812'
+        instance0.stopTime = 'NA'
+
+        instance1 = Mock()
+        instance1.id = 'i-938372'
+        instance1.dns_name = '192.1.11.1.dnsname'
+        instance1.ip_address = '192.1.11.1'
+        instance1.state = 'running'
+        instance1.tags = {'Name': 'Instance1ShouldStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
+        instance1.launch_time = date.today().isoformat()
+        instance1.image_id = 'ami-192812'
+        instance1.stopTime = '17'
+
+        instance2 = Mock()
+        instance2.id = 'i-542211'
+        instance2.dns_name = '192.5.5.5.dnsname'
+        instance2.ip_address = '192.5.5.5'
+        instance2.state = 'stopped'
+        instance2.tags = {'Name': 'Instance2ShouldStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
+        instance2.launch_time = date.today().isoformat()
+        instance2.image_id = 'ami-237829'
+        instance2.stopTime = '18'
+
+        instance3 = Mock()
+        instance3.id = 'i-542211'
+        instance3.dns_name = '192.5.5.5.dnsname'
+        instance3.ip_address = '192.5.5.5'
+        instance3.state = 'stopped'
+        instance3.tags = {'Name': 'Instance3ShouldntStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
+        instance3.launch_time = date.today().isoformat()
+        instance3.image_id = 'ami-237829'
+        instance3.stopTime = '19'
+
+        mock_connection.get_only_instances.return_value = [instance0, instance1, instance2, instance3]
+
+        instances = ec2.get_auto_stop_candidates()
+
+        self.assertEquals(len(instances), 2)
+        self.assertEquals(instances[0].tags.['name'], 'Instance1ShouldStop')
+        self.assertEquals(instances[0]['stopTime'], '17')
+        self.assertEquals(instances[1].tags.['name'], 'Instance2ShouldStop')
+        self.assertEquals(instances[1]['stopTime'], '18')

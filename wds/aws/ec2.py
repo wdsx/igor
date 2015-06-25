@@ -149,3 +149,19 @@ def get_all_instances(region='eu-west-1'):
                           'ami': instance.image_id,
                           'status': instance.state})
     return instances
+
+def get_auto_stop_candidates():
+    instances = []
+    returned_instances = get_instances()
+    for instance in returned_instances:
+        if instance.stopTime != 'NA' and int(instance.stopTime) < 18.1:
+            instances.append({'name': instance.name,
+                          'version': instance.tags['Version'],
+                          'stopTime': instance.stopTime,
+                          'project': instance.tags['Project'],
+                          'date': instance.launch_time,
+                          'ip': instance.ip_address or "None",
+                          'ami': instance.image_id,
+                          'status': instance.state})
+            
+    return instances
