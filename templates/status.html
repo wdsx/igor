@@ -13,6 +13,15 @@
   </button>
 
   <ul class="list">
+		<li class="tableHeaders">
+		  <p></p>
+		  <p>Instance Name</p>
+		  <p>IP Address</p>
+		  <p>Version</p>
+		  <p>Date</p>
+		  <p>Stop Time</p>
+		  <p>AMI</p>
+		</li>
     {% for i in instances %}
         <li>
           <p class="status">
@@ -24,7 +33,8 @@
           <a class="name" href="http://{{i.name}}.{{environment}}.{{domain}}:9000">{{ i.name }}</a>
           <p class="ip">{{ i.ip }}</p>
           <p class="version">{{ i.version }}</p>
-          <p class="date">{{ i.date }}</p>
+          <p class="date">{{i.date.format("dd MMM")}}</p>
+          <p class="stopTime">{{ i.stopTime }}</p>
           <p class="ami">{{ i.ami }}</p>
         </li>
         {% endfor %}

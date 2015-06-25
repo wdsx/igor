@@ -38,9 +38,16 @@ def create_and_start_instances(project):
         if status == 'running':
             instance_ids.append(instance.id)
             print 'New instance %s accessible at %s' % (instance.id, instance.public_dns_name)
+            
+            try:
+               stopTime = project['stop-time']
+            except KeyError:
+               stopTime = "NA"
+                    
             instance.add_tags({'Name': instance_name,
                                'Project': project['name'],
                                'Version': project['version'],
+                               'StopTime': stopTime,
                                'Environment': tenant.get_property('environment'),
                                'Capability': tenant.get_property('tag.capability'),
                                'Client': tenant.get_property('tag.client'),
@@ -127,8 +134,15 @@ def get_all_instances(region='eu-west-1'):
             name = instance.tags['Name'][instance.tags['Name'].index("-")+1:]
         except:
             name = instance.tags['Name']
+            
+        try:
+            stopTime = instance.tags['StopTime']
+        except KeyError:
+            stopTime = 'NA'
+            
         instances.append({'name': name,
                           'version': instance.tags['Version'],
+                          'stopTime': stopTime,
                           'project': instance.tags['Project'],
                           'date': instance.launch_time,
                           'ip': instance.ip_address or "None",

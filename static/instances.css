@@ -127,3 +127,7 @@ a:active {
     color: #28a8e0;
     text-decoration: none;
 }
+
+.tableHeaders{
+    font-weight: bold;
+}
