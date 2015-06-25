@@ -27,4 +27,4 @@ def get_instances():
     return ec2.get_all_instances()
 
 def stop_auto_stop_candidates():
-    print "TO-DO" 
+    ec2.stop(ec2.get_auto_stop_candidates())
