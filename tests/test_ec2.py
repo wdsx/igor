@@ -496,7 +496,7 @@ class Ec2Test(unittest.TestCase):
         instances = ec2.get_auto_stop_candidates()
 
         self.assertEquals(len(instances), 2)
-        self.assertEquals(instances[0].tags.['name'], 'Instance1ShouldStop')
+        self.assertEquals(instances[0]['name'], 'Instance1ShouldStop')
         self.assertEquals(instances[0]['stopTime'], '17')
-        self.assertEquals(instances[1].tags.['name'], 'Instance2ShouldStop')
+        self.assertEquals(instances[1]['name'], 'Instance2ShouldStop')
         self.assertEquals(instances[1]['stopTime'], '18')

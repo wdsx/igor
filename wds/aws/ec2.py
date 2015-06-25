@@ -155,7 +155,7 @@ def get_auto_stop_candidates():
     returned_instances = get_instances()
     for instance in returned_instances:
         if instance.stopTime != 'NA' and int(instance.stopTime) < 18.1:
-            instances.append({'name': instance.name,
+            instances.append({'name': instance.tags['Name'],
                           'version': instance.tags['Version'],
                           'stopTime': instance.stopTime,
                           'project': instance.tags['Project'],
