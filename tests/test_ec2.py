@@ -440,98 +440,37 @@ class Ec2Test(unittest.TestCase):
         self.assertEquals(False, result)
 
         ec2.check_url = real_function
+                
+    def getStubInstances(self):
+        now = datetime.datetime.now()
+        fiveHoursAgo = (datetime.datetime.now() - datetime.timedelta(hours=5))
         
+        stubInstancesToReturn = []
+        stubInstancesToReturn.append({'name':'Instance0StopTimeNA', 'stopTime':'NA', 'date':fiveHoursAgo.isoformat(), 'state':'running'})
+        stubInstancesToReturn.append({'name':'Instance1RunningStopTimePassed', 'stopTime':''+str(now.hour - 1)+'', 'date':fiveHoursAgo.isoformat(), 'state':'running'})
+        stubInstancesToReturn.append({'name':'Instance2RunningButStopTimeNotPassed', 'stopTime':''+str(now.hour + 1)+'', 'date':fiveHoursAgo.isoformat(), 'state':'running'})
+        stubInstancesToReturn.append({'name':'Instance3RunningStopTimeJustPassed', 'stopTime':''+str(now.hour)+'', 'date':fiveHoursAgo.isoformat(), 'state':'running'})
+        stubInstancesToReturn.append({'name':'Instance4AlreadyStopped', 'stopTime':''+str(now.hour - 1)+'', 'date':fiveHoursAgo.isoformat(), 'state':'stopped'})
+        stubInstancesToReturn.append({'name':'Instance5RunningStopTimePassedButLaunchedSince', 'stopTime':''+str(now.hour - 1)+'', 'date':now.isoformat(), 'state':'running'})
+        stubInstancesToReturn.append({'name':'Instance6NoStopTime', 'date':now.isoformat(), 'state':'stopped'})
+        return stubInstancesToReturn
+
     @mock.patch('wds.aws.ec2.ec2')
-    @mock.patch('wds.aws.ec2.landlord')        
+    @mock.patch('wds.aws.ec2.landlord')
     def test_when_we_get_auto_stop_candidates_the_correct_instances_are_returned(self, mock_landlord, mock_ec2):
         now = datetime.datetime.now()
-        fiveHoursAgo = datetime.datetime.now() - datetime.timedelta(hours=5)
+        fiveHoursAgo = (datetime.datetime.now() - datetime.timedelta(hours=5))
 
-        mock_landlord.Tenant = StubLandlord
-        mock_connection = Mock()
-        mock_ec2.connect_to_region.return_value = mock_connection
-        
+        ec2.get_all_instances = Mock(return_value=self.getStubInstances())
+        unitInstances = ec2.get_auto_stop_candidates()
 
-        stopTimeNa = Mock()
-        stopTimeNa.id = 'i-938372'
-        stopTimeNa.dns_name = '192.1.11.1.dnsname'
-        stopTimeNa.ip_address = '192.1.11.1'
-        stopTimeNa.state = 'running'
-        stopTimeNa.tags = {'Name': 'Instance0ShouldntStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
-        stopTimeNa.launch_time = fiveHoursAgo.isoformat()
-        stopTimeNa.image_id = 'ami-192812'
-        stopTimeNa.stopTime = 'NA'
-
-        runningStopTimePassed = Mock()
-        runningStopTimePassed.id = 'i-938372'
-        runningStopTimePassed.dns_name = '192.1.11.1.dnsname'
-        runningStopTimePassed.ip_address = '192.1.11.1'
-        runningStopTimePassed.state = 'running'
-        runningStopTimePassed.tags = {'Name': 'Instance1ShouldStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
-        runningStopTimePassed.launch_time = fiveHoursAgo.isoformat()
-        runningStopTimePassed.image_id = 'ami-192812'
-        runningStopTimePassed.stopTime = now.hour-1
-
-        runningStopTimeJustPassed = Mock()
-        runningStopTimeJustPassed.id = 'i-542211'
-        runningStopTimeJustPassed.dns_name = '192.5.5.5.dnsname'
-        runningStopTimeJustPassed.ip_address = '192.5.5.5'
-        runningStopTimeJustPassed.state = 'running'
-        runningStopTimeJustPassed.tags = {'Name': 'Instance2ShouldStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        runningStopTimeJustPassed.launch_time = fiveHoursAgo.isoformat()
-        runningStopTimeJustPassed.image_id = 'ami-237829'
-        runningStopTimeJustPassed.stopTime = now.hour
-
-        runningButStopTimeNotPassed = Mock()
-        runningButStopTimeNotPassed.id = 'i-542211'
-        runningButStopTimeNotPassed.dns_name = '192.5.5.5.dnsname'
-        runningButStopTimeNotPassed.ip_address = '192.5.5.5'
-        runningButStopTimeNotPassed.state = 'running'
-        runningButStopTimeNotPassed.tags = {'Name': 'Instance3ShouldntStop', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        runningButStopTimeNotPassed.launch_time = fiveHoursAgo.isoformat()
-        runningButStopTimeNotPassed.image_id = 'ami-237829'
-        runningButStopTimeNotPassed.stopTime = now.hour+1
-
-        stopTimePassedButNotRunning = Mock()
-        stopTimePassedButNotRunning.id = 'i-542211'
-        stopTimePassedButNotRunning.dns_name = '192.5.5.5.dnsname'
-        stopTimePassedButNotRunning.ip_address = '192.5.5.5'
-        stopTimePassedButNotRunning.state = 'stopped'
-        stopTimePassedButNotRunning.tags = {'Name': 'Instance4AlreadyStopped', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        stopTimePassedButNotRunning.launch_time = fiveHoursAgo.isoformat()
-        stopTimePassedButNotRunning.image_id = 'ami-237829'
-        stopTimePassedButNotRunning.stopTime = now.hour-1
-
-        runningStopTimePassedButLaunchedSince = Mock()
-        runningStopTimePassedButLaunchedSince.id = 'i-542211'
-        runningStopTimePassedButLaunchedSince.dns_name = '192.5.5.5.dnsname'
-        runningStopTimePassedButLaunchedSince.ip_address = '192.5.5.5'
-        runningStopTimePassedButLaunchedSince.state = 'running'
-        runningStopTimePassedButLaunchedSince.tags = {'Name': 'Instance4AlreadyStopped', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        runningStopTimePassedButLaunchedSince.launch_time = now.isoformat()
-        runningStopTimePassedButLaunchedSince.image_id = 'ami-237829'
-        runningStopTimePassedButLaunchedSince.stopTime = now.hour-1
-
-        noStopTimeDefinedAtAll = Mock()
-        noStopTimeDefinedAtAll.id = 'i-542211'
-        noStopTimeDefinedAtAll.dns_name = '192.5.5.5.dnsname'
-        noStopTimeDefinedAtAll.ip_address = '192.5.5.5'
-        noStopTimeDefinedAtAll.state = 'running'
-        noStopTimeDefinedAtAll.tags = {'Name': 'Instance4AlreadyStopped', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
-        noStopTimeDefinedAtAll.launch_time = now.isoformat()
-        noStopTimeDefinedAtAll.image_id = 'ami-237829'
-
-        mock_connection.get_only_instances.return_value = [stopTimeNa, runningStopTimePassed, runningStopTimeJustPassed, runningButStopTimeNotPassed, stopTimePassedButNotRunning, runningStopTimePassedButLaunchedSince, noStopTimeDefinedAtAll]
-
-        instances = ec2.get_auto_stop_candidates()
-
-        self.assertEquals(len(instances), 2)
-        self.assertEquals(instances[0]['name'], 'Instance1ShouldStop')
-        self.assertEquals(instances[0]['stopTime'], now.hour-1)
-        self.assertLess(instances[0]['launchtime'].hour, now.hour)
-        self.assertEquals(instances[1]['name'], 'Instance2ShouldStop')
-        self.assertEquals(instances[1]['stopTime'], now.hour)
-        self.assertLess(instances[1]['launchtime'].hour, now.hour)
+        self.assertEquals(len(unitInstances), 2)
+        self.assertEquals(unitInstances[0]['name'], 'Instance1RunningStopTimePassed')
+        self.assertEquals(unitInstances[0]['stopTime'], now.hour-1)
+        self.assertLess(unitInstances[0]['launchtime'], now.hour)
+        self.assertEquals(unitInstances[1]['name'], 'Instance3RunningStopTimeJustPassed')
+        self.assertEquals(unitInstances[1]['stopTime'], now.hour)
+        self.assertLess(unitInstances[1]['launchtime'], now.hour)
         
     @mock.patch('wds.aws.ec2.ec2')
     @mock.patch('wds.aws.ec2.landlord')

@@ -153,26 +153,24 @@ def get_all_instances(region='eu-west-1'):
 
 def get_auto_stop_candidates():
     instances = []
-    returned_instances = get_instances()
+    returned_instances = get_all_instances()
     currentHour = datetime.datetime.now().hour
     
-    for instance in returned_instances:
-        launchTime = yourdate = dateutil.parser.parse(instance.launch_time)
-        
+    for instance in returned_instances:        
         try:
-            if instance.stopTime != 'NA' and int(instance.stopTime) <= currentHour and instance.state == 'running' and launchTime.hour < currentHour:
-                instances.append({'name': instance.tags['Name'],
-                          'version': instance.tags['Version'],
+            launchTime = dateutil.parser.parse(instance['date']).hour
+            state = instance['state']
+            name = instance['name']
+            stopTime = int(instance['stopTime'])
+            if stopTime != 'NA' and stopTime <= currentHour and  state == 'running' and launchTime < currentHour:
+                print('Going to stop instance:')
+                print(instance)
+                instances.append({'name': name,
                           'launchtime': launchTime,
-                          'stopTime': instance.stopTime,
-                          'project': instance.tags['Project'],
-                          'date': instance.launch_time,
-                          'ip': instance.ip_address or "None",
-                          'ami': instance.image_id,
-                          'status': instance.state})
+                          'stopTime': stopTime})
         except:
             instances = instances
-            
+    
     return instances
 
 def stop(instance_ids):
