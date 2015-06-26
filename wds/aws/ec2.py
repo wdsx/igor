@@ -166,9 +166,10 @@ def get_auto_stop_candidates():
             if stopTime != 'NA' and stopTime <= currentHour and  state == 'running' and launchTime < currentHour:
                 print('Going to stop instance:')
                 print(instance)
-                instances.append({'name': name,
-                          'launchtime': launchTime,
-                          'stopTime': stopTime})
+                instances.append({'id':instance['id'],
+                                  'name': name,
+                                  'launchtime': launchTime,
+                                  'stopTime': stopTime})
         except:
             print('Skipping instance')
     

@@ -114,9 +114,11 @@ class IgorTest(unittest.TestCase):
         
     @mock.patch('wds.igor.igor.ec2')
     def test_auto_stop_candidates_are_passed_to_ec2_to_stop(self, mock_ec2):
-        sampleInstanceIds = ['i-f6d1190f','i-f6d1190f']
+        sampleInstanceIds = [{'id':'i-f6d1190f'},{'id':'i-f6d1190f'}]
         mock_ec2.get_auto_stop_candidates.return_value = sampleInstanceIds
         igor.stop_auto_stop_candidates()
         
         self.assertEquals(mock_ec2.get_auto_stop_candidates.call_count, 1)
-        mock_ec2.stop.assert_called_with(sampleInstanceIds)
+        mock_ec2.stop.assert_called_with(['i-f6d1190f','i-f6d1190f'])
+        
+        

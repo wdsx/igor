@@ -27,4 +27,9 @@ def get_instances():
 
 def stop_auto_stop_candidates():
     autoStopCandidates = ec2.get_auto_stop_candidates()
-    ec2.stop(autoStopCandidates)
+    instanceIdsToStop = []
+    
+    for instance in autoStopCandidates:
+        instanceIdsToStop.append(instance['id'])
+        
+    ec2.stop(instanceIdsToStop)
