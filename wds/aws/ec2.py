@@ -140,8 +140,9 @@ def get_all_instances(region='eu-west-1'):
             stopTime = instance.tags['StopTime']
         except KeyError:
             stopTime = 'NA'
-            
-        instances.append({'name': name,
+           
+        instances.append({'id':instance.id,
+                          'name': name,
                           'version': instance.tags['Version'],
                           'stopTime': stopTime,
                           'project': instance.tags['Project'],
@@ -169,8 +170,7 @@ def get_auto_stop_candidates():
                           'launchtime': launchTime,
                           'stopTime': stopTime})
         except:
-            print('Not stopping instance:')
-            print(instance)
+            print('Skipping instance')
     
     return instances
 
