@@ -156,14 +156,22 @@ def get_auto_stop_candidates():
     instances = []
     returned_instances = get_all_instances()
     currentHour = datetime.datetime.now().hour
+    currentDay = datetime.datetime.now().day
     
     for instance in returned_instances:        
         try:
             launchTime = dateutil.parser.parse(instance['date']).hour
+            launchDay = dateutil.parser.parse(instance['date']).day
             state = instance['status']
             name = instance['name']
             stopTime = int(instance['stopTime'])
-            if stopTime != 'NA' and stopTime <= currentHour and  state == 'running' and launchTime < currentHour:
+            
+            launchedTodaySinceStopTime = False
+            
+            if launchTime > stopTime and launchDay == currentDay:
+                launchedTodaySinceStopTime = True
+            
+            if stopTime != 'NA' and stopTime <= currentHour and state == 'running' and not launchedTodaySinceStopTime:
                 print('Going to stop instance:')
                 print(instance)
                 instances.append({'id':instance['id'],
