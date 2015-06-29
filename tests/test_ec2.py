@@ -4,6 +4,7 @@ import mock
 from wds.aws import ec2
 from wds.persistence import persistence
 import datetime
+from boto.ec2 import instance
 
 class StubLandlord():
     def load_properties(self):
@@ -491,6 +492,10 @@ class Ec2Test(unittest.TestCase):
         mock_connection = Mock()
         mock_ec2.connect_to_region.return_value = mock_connection
 
+        mockInstance1 = Mock()
+        mockInstance2 = Mock()
+        mock_connection.stop_instances.return_value = [mockInstance1, mockInstance2]
+
         ec2.stop(instances)
         mock_ec2.connect_to_region.assert_called_with('deploy.region', aws_access_key_id='aws.id',
                                                       aws_secret_access_key='aws.secret')
@@ -508,3 +513,20 @@ class Ec2Test(unittest.TestCase):
         
         self.assertEquals(mock_ec2.connect_to_region.call_count, 0);
         self.assertEquals(mock_connection.stop_instances.call_count, 0);
+        
+    @mock.patch('wds.aws.ec2.ec2')
+    @mock.patch('wds.aws.ec2.landlord')
+    def test_tag_added_when_instance_auto_stopped(self, mock_landlord, mock_ec2):
+        instances = ['i-278219', 'i-82715']
+        mock_landlord.Tenant = StubLandlord
+        mock_connection = Mock()
+        mock_ec2.connect_to_region.return_value = mock_connection
+
+        mockInstance1 = Mock()
+        mockInstance2 = Mock()
+        mock_connection.stop_instances.return_value = [mockInstance1, mockInstance2]
+        
+        ec2.stop(instances)
+        
+        mockInstance1.add_tags.assert_called_with({'AutoStopped': 'True'})
+        mockInstance2.add_tags.assert_called_with({'AutoStopped': 'True'})

@@ -192,4 +192,9 @@ def stop(instance_ids):
         connection = ec2.connect_to_region(tenant.get_property('deploy.region'),
                                            aws_access_key_id=tenant.get_property('aws.id'),
                                            aws_secret_access_key=tenant.get_property('aws.secret'))
-        connection.stop_instances(instance_ids)
+        
+        stoppedInstances = connection.stop_instances(instance_ids)
+        
+        for instance in stoppedInstances:
+            instance.add_tags({'AutoStopped': 'True'})
+            
