@@ -565,3 +565,51 @@ class Ec2Test(unittest.TestCase):
         
         self.assertEquals(unitInstances[1]['id'], '4')
         self.assertEquals(unitInstances[1]['name'], 'Instance3StoppedAndStartTimeTimeJustPassed')
+        
+    @mock.patch('wds.aws.ec2.ec2')
+    @mock.patch('wds.aws.ec2.landlord')
+    def test_start_reqeusted_for_ids(self, mock_landlord, mock_ec2):
+        instances = ['i-278219', 'i-82715']
+        mock_landlord.Tenant = StubLandlord
+        mock_connection = Mock()
+        mock_ec2.connect_to_region.return_value = mock_connection
+
+        mockInstance1 = Mock()
+        mockInstance2 = Mock()
+        mock_connection.start_instances.return_value = [mockInstance1, mockInstance2]
+
+        ec2.start(instances)
+        mock_ec2.connect_to_region.assert_called_with('deploy.region', aws_access_key_id='aws.id',
+                                                      aws_secret_access_key='aws.secret')
+        mock_connection.start_instances.assert_called_with(instances)
+
+        
+    @mock.patch('wds.aws.ec2.ec2')
+    @mock.patch('wds.aws.ec2.landlord')
+    def test_start_not_called_when_reqeusted_ids_is_empty(self, mock_landlord, mock_ec2):
+        instances = []
+        mock_landlord.Tenant = StubLandlord
+        mock_connection = Mock()
+        mock_ec2.connect_to_region.return_value = mock_connection
+
+        ec2.start(instances)
+        
+        self.assertEquals(mock_ec2.connect_to_region.call_count, 0);
+        self.assertEquals(mock_connection.start_instances.call_count, 0);
+        
+    @mock.patch('wds.aws.ec2.ec2')
+    @mock.patch('wds.aws.ec2.landlord')
+    def test_autostopped_tag_removed_when_instance_started(self, mock_landlord, mock_ec2):
+        instances = ['i-278219', 'i-82715']
+        mock_landlord.Tenant = StubLandlord
+        mock_connection = Mock()
+        mock_ec2.connect_to_region.return_value = mock_connection
+
+        mockInstance1 = Mock()
+        mockInstance2 = Mock()
+        mock_connection.start_instances.return_value = [mockInstance1, mockInstance2]
+        
+        ec2.start(instances)
+        
+        mockInstance1.remove_tags.assert_called_with({'AutoStopped'})
+        mockInstance2.remove_tags.assert_called_with({'AutoStopped'})

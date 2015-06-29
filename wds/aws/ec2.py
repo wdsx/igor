@@ -236,4 +236,18 @@ def get_auto_start_candidates():
             print('Skipping instance')
     
     return instances
-            
+
+def start(instance_ids):
+    if len(instance_ids) == 0:
+        return False
+    else:
+        tenant = landlord.Tenant()
+        tenant.load_properties()
+        connection = ec2.connect_to_region(tenant.get_property('deploy.region'),
+                                           aws_access_key_id=tenant.get_property('aws.id'),
+                                           aws_secret_access_key=tenant.get_property('aws.secret'))
+        
+        startedInstances = connection.start_instances(instance_ids)
+        
+        for instance in startedInstances:
+             instance.remove_tags({'AutoStopped'})

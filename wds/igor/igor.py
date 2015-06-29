@@ -33,3 +33,12 @@ def stop_auto_stop_candidates():
         instanceIdsToStop.append(instance['id'])
         
     ec2.stop(instanceIdsToStop)
+
+def start_auto_start_candidates():
+    autoStartCandidates = ec2.get_auto_start_candidates()
+    instanceIdsToStart = []
+    
+    for instance in autoStartCandidates:
+        instanceIdsToStart.append(instance['id'])
+        
+    ec2.start(instanceIdsToStart)
