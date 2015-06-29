@@ -151,12 +151,18 @@ def get_all_instances(region='eu-west-1'):
             startTime = instance.tags['StartTime']
         except KeyError:
             startTime = 'NA'
+            
+        try:
+            autoStopped = instance.tags['AutoStopped']
+        except KeyError:
+            autoStopped = 'NA'
            
         instances.append({'id':instance.id,
                           'name': name,
                           'version': instance.tags['Version'],
                           'startTime': startTime,
                           'stopTime': stopTime,
+                          'autoStopped': autoStopped,
                           'project': instance.tags['Project'],
                           'date': instance.launch_time,
                           'ip': instance.ip_address or "None",
@@ -219,8 +225,9 @@ def get_auto_start_candidates():
             state = instance['status']
             name = instance['name']
             startTime = int(instance['startTime'])
+            autoStopped = instance['autoStopped']
             
-            if startTime != 'NA' and startTime <= currentHour and state == 'stopped':
+            if startTime != 'NA' and startTime <= currentHour and state == 'stopped' and autoStopped == 'True':
                 print('Going to start instance:'+name)
                 instances.append({'id':instance['id'],
                                   'name': name,

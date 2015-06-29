@@ -266,7 +266,7 @@ class Ec2Test(unittest.TestCase):
         instance1.dns_name = '192.1.11.1.dnsname'
         instance1.ip_address = '192.1.11.1'
         instance1.state = 'running'
-        instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8', 'start-time': '8'}
+        instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43', 'AutoStopped': 'True'}
         instance1.launch_time = datetime.date.today().isoformat()
         instance1.image_id = 'ami-192812'
 
@@ -275,7 +275,7 @@ class Ec2Test(unittest.TestCase):
         instance2.dns_name = '192.5.5.5.dnsname'
         instance2.ip_address = '192.5.5.5'
         instance2.state = 'stopped'
-        instance2.tags = {'Name': 'Instance2', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9', 'start-time': '8'}
+        instance2.tags = {'Name': 'Instance2', 'Project': 'Instance', 'Version': 'v43'}
         instance2.launch_time = datetime.date.today().isoformat()
         instance2.image_id = 'ami-237829'
 
@@ -293,7 +293,7 @@ class Ec2Test(unittest.TestCase):
         self.assertEquals(instances[0]['date'], datetime.date.today().isoformat())
         self.assertEquals(instances[0]['ip'], '192.1.11.1')
         self.assertEquals(instances[0]['status'], 'running')
-        self.assertEquals(instances[0]['ami'], 'ami-192812')
+        self.assertEquals(instances[0]['autoStopped'], 'True')
 
         self.assertEquals(instances[1]['name'], 'Instance2')
         self.assertEquals(instances[1]['version'], 'v43')
@@ -302,6 +302,7 @@ class Ec2Test(unittest.TestCase):
         self.assertEquals(instances[1]['ip'], '192.5.5.5')
         self.assertEquals(instances[1]['status'], 'stopped')
         self.assertEquals(instances[1]['ami'], 'ami-237829')
+        self.assertEquals(instances[1]['autoStopped'], 'NA')
 
     @mock.patch('wds.aws.ec2.ec2')
     @mock.patch('wds.aws.ec2.landlord')
@@ -540,12 +541,13 @@ class Ec2Test(unittest.TestCase):
         oneDayAgo = (datetime.datetime.now() - datetime.timedelta(days=1))
         
         stubInstancesToReturn = []
-        stubInstancesToReturn.append({'id':'1','name':'Instance0StartTimeNA', 'startTime':'NA', 'date':fiveHoursAgo.isoformat(), 'status':'stopped'})
-        stubInstancesToReturn.append({'id':'2','name':'Instance1StoppedAndStartTimePassed', 'startTime':''+str(now.hour - 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped'})
-        stubInstancesToReturn.append({'id':'3','name':'Instance2StoppedButStopTimeNotPassed', 'startTime':''+str(now.hour + 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped'})
-        stubInstancesToReturn.append({'id':'4','name':'Instance3StoppedAndStartTimeTimeJustPassed', 'startTime':''+str(now.hour)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped'})
-        stubInstancesToReturn.append({'id':'5','name':'Instance4AlreadyStarted', 'startTime':''+str(now.hour - 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'running'})
-        stubInstancesToReturn.append({'id':'6','name':'Instance5NoStartTime', 'date':now.isoformat(), 'status':'stopped'})
+        stubInstancesToReturn.append({'id':'1','name':'Instance0StartTimeNA', 'startTime':'NA', 'date':fiveHoursAgo.isoformat(), 'status':'stopped', 'autoStopped':'True'})
+        stubInstancesToReturn.append({'id':'2','name':'Instance1StoppedAndStartTimePassed', 'startTime':''+str(now.hour - 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped', 'autoStopped':'True'})
+        stubInstancesToReturn.append({'id':'3','name':'Instance2StoppedButStopTimeNotPassed', 'startTime':''+str(now.hour + 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped', 'autoStopped':'True'})
+        stubInstancesToReturn.append({'id':'4','name':'Instance3StoppedAndStartTimeTimeJustPassed', 'startTime':''+str(now.hour)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped', 'autoStopped':'True'})
+        stubInstancesToReturn.append({'id':'5','name':'Instance4AlreadyStarted', 'startTime':''+str(now.hour - 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'running', 'autoStopped':'True'})
+        stubInstancesToReturn.append({'id':'6','name':'Instance5NoStartTime', 'date':now.isoformat(), 'status':'stopped', 'AutoStopped':'True'})
+        stubInstancesToReturn.append({'id':'7','name':'Instance6NotStoppedByAutoStopProcess', 'startTime':''+str(now.hour - 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped'})
         return stubInstancesToReturn
 
     @mock.patch('wds.aws.ec2.ec2')
