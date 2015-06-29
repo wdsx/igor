@@ -611,5 +611,5 @@ class Ec2Test(unittest.TestCase):
         
         ec2.start(instances)
         
-        mockInstance1.remove_tags.assert_called_with({'AutoStopped'})
-        mockInstance2.remove_tags.assert_called_with({'AutoStopped'})
+        mockInstance1.remove_tags.assert_called_with(['AutoStopped'])
+        mockInstance2.remove_tags.assert_called_with(['AutoStopped'])

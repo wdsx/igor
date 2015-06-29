@@ -250,4 +250,4 @@ def start(instance_ids):
         startedInstances = connection.start_instances(instance_ids)
         
         for instance in startedInstances:
-             instance.remove_tags({'AutoStopped'})
+             instance.remove_tags(['AutoStopped'])

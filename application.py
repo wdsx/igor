@@ -58,6 +58,11 @@ def stop_autostop_candidates():
     igor.stop_auto_stop_candidates()
     return "I've autostopped the candidate instances"
 
+@app.route("/startAutoStartCandidates")
+def start_autostart_candidates():
+    igor.start_auto_start_candidates()
+    return "I've autostarted the candidate instances"
+
 if __name__ == "__main__":
     app.run(debug=True)
 
