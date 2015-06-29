@@ -44,10 +44,16 @@ def create_and_start_instances(project):
                stopTime = project['stop-time']
             except KeyError:
                stopTime = "NA"
+            
+            try:
+               startTime = project['start-time']
+            except KeyError:
+               startTime = "NA"
                     
             instance.add_tags({'Name': instance_name,
                                'Project': project['name'],
                                'Version': project['version'],
+                               'StartTime': startTime,
                                'StopTime': stopTime,
                                'Environment': tenant.get_property('environment'),
                                'Capability': tenant.get_property('tag.capability'),
@@ -140,10 +146,16 @@ def get_all_instances(region='eu-west-1'):
             stopTime = instance.tags['StopTime']
         except KeyError:
             stopTime = 'NA'
+            
+        try:
+            startTime = instance.tags['StartTime']
+        except KeyError:
+            startTime = 'NA'
            
         instances.append({'id':instance.id,
                           'name': name,
                           'version': instance.tags['Version'],
+                          'startTime': startTime,
                           'stopTime': stopTime,
                           'project': instance.tags['Project'],
                           'date': instance.launch_time,

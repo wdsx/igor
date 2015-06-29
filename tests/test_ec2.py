@@ -45,7 +45,7 @@ class Ec2Test(unittest.TestCase):
     @mock.patch('wds.aws.ec2.Script')
     def test_we_create_only_one_instance(self, mock_script, mock_time, mock_dns, mock_landlord, mock_ec2):
         my_project = 'MyProject'
-        project = {'name': ('%s' % my_project), 'version': 'v34', 'type': 'play2', 'stop-time': '18'}
+        project = {'name': ('%s' % my_project), 'version': 'v34', 'type': 'play2', 'stop-time': '18', 'start-time': '8'}
         mock_connection = Mock()
         instance1 = Mock()
         instance1.id = 'i-938372'
@@ -74,6 +74,7 @@ class Ec2Test(unittest.TestCase):
                                    'Project': my_project,
                                    'Version': 'v34',
                                    'StopTime': '18',
+                                   'StartTime': '8',
                                    'Environment': 'environment',
                                    'Capability': 'tag.capability',
                                    'Client': 'tag.client',
@@ -265,7 +266,7 @@ class Ec2Test(unittest.TestCase):
         instance1.dns_name = '192.1.11.1.dnsname'
         instance1.ip_address = '192.1.11.1'
         instance1.state = 'running'
-        instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
+        instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8', 'start-time': '8'}
         instance1.launch_time = datetime.date.today().isoformat()
         instance1.image_id = 'ami-192812'
 
@@ -274,7 +275,7 @@ class Ec2Test(unittest.TestCase):
         instance2.dns_name = '192.5.5.5.dnsname'
         instance2.ip_address = '192.5.5.5'
         instance2.state = 'stopped'
-        instance2.tags = {'Name': 'Instance2', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
+        instance2.tags = {'Name': 'Instance2', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9', 'start-time': '8'}
         instance2.launch_time = datetime.date.today().isoformat()
         instance2.image_id = 'ami-237829'
 
@@ -316,14 +317,14 @@ class Ec2Test(unittest.TestCase):
         instance1.ip_address = '192.1.11.1'
         instance1.state = 'running'
         instance1.launch_time = datetime.date.today().isoformat()
-        instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8'}
+        instance1.tags = {'Name': 'STAGE-Instance-1', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '8', 'StartTime': '6'}
 
         instance2 = Mock()
         instance2.id = 'i-542211'
         instance2.state = 'stopped'
         instance2.ip_address = None
         instance2.launch_time = datetime.date.today().isoformat()
-        instance2.tags = {'Name': 'STAGE-Instance-2', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9'}
+        instance2.tags = {'Name': 'STAGE-Instance-2', 'Project': 'Instance', 'Version': 'v43', 'StopTime' : '9', 'StartTime': '7'}
 
         mock_connection.get_only_instances.return_value = [instance1, instance2]
 
@@ -336,12 +337,14 @@ class Ec2Test(unittest.TestCase):
         self.assertEquals(instances[0]['name'], 'Instance-1')
         self.assertEquals(instances[0]['version'], 'v43')
         self.assertEquals(instances[0]['stopTime'], '8')
+        self.assertEquals(instances[0]['startTime'], '6')
         self.assertEquals(instances[0]['project'], 'Instance')
         self.assertEquals(instances[0]['date'], datetime.date.today().isoformat())
         self.assertEquals(instances[0]['ip'], '192.1.11.1')
         self.assertEquals(instances[0]['status'], 'running')
         self.assertEquals(instances[1]['name'], 'Instance-2')
         self.assertEquals(instances[1]['version'], 'v43')
+        self.assertEquals(instances[1]['startTime'], '7')
         self.assertEquals(instances[1]['stopTime'], '9')
         self.assertEquals(instances[1]['project'], 'Instance')
         self.assertEquals(instances[1]['date'], datetime.date.today().isoformat())
@@ -372,7 +375,7 @@ class Ec2Test(unittest.TestCase):
     @mock.patch('wds.aws.ec2.landlord')
     def test_we_capture_the_checkurl_exception_and_return_false(self, mock_landlord, mock_ec2):
         properties = {'region': 'myRegion', 'environment': 'STAGE', 'domain': 'this.is.awesome'}
-        project = {'name': 'MyProject', 'version': 'v34', 'type': 'play2', 'StopTime' : '8'}
+        project = {'name': 'MyProject', 'version': 'v34', 'type': 'play2', 'StopTime' : '8', 'StartTime': '6'}
         instances_ids = ['blah']
 
         mock_landlord.Tenant = StubLandlord
