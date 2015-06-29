@@ -445,7 +445,7 @@ class Ec2Test(unittest.TestCase):
 
         ec2.check_url = real_function
                 
-    def getStubInstances(self):
+    def getStubStopCandidateInstances(self):
         now = datetime.datetime.now()
         fiveHoursAgo = (datetime.datetime.now() - datetime.timedelta(hours=5))
         oneDayAgo = (datetime.datetime.now() - datetime.timedelta(days=1))
@@ -468,7 +468,7 @@ class Ec2Test(unittest.TestCase):
         fiveHoursAgo = (datetime.datetime.now() - datetime.timedelta(hours=5))
         oneDayAgo = (datetime.datetime.now() - datetime.timedelta(days=1))
 
-        ec2.get_all_instances = Mock(return_value=self.getStubInstances())
+        ec2.get_all_instances = Mock(return_value=self.getStubStopCandidateInstances())
         unitInstances = ec2.get_auto_stop_candidates()
 
         self.assertEquals(len(unitInstances), 3)
@@ -533,3 +533,33 @@ class Ec2Test(unittest.TestCase):
         
         mockInstance1.add_tags.assert_called_with({'AutoStopped': 'True'})
         mockInstance2.add_tags.assert_called_with({'AutoStopped': 'True'})
+        
+    def getStubStartCandidateInstances(self):
+        now = datetime.datetime.now()
+        fiveHoursAgo = (datetime.datetime.now() - datetime.timedelta(hours=5))
+        oneDayAgo = (datetime.datetime.now() - datetime.timedelta(days=1))
+        
+        stubInstancesToReturn = []
+        stubInstancesToReturn.append({'id':'1','name':'Instance0StartTimeNA', 'startTime':'NA', 'date':fiveHoursAgo.isoformat(), 'status':'stopped'})
+        stubInstancesToReturn.append({'id':'2','name':'Instance1StoppedAndStartTimePassed', 'startTime':''+str(now.hour - 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped'})
+        stubInstancesToReturn.append({'id':'3','name':'Instance2StoppedButStopTimeNotPassed', 'startTime':''+str(now.hour + 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped'})
+        stubInstancesToReturn.append({'id':'4','name':'Instance3StoppedAndStartTimeTimeJustPassed', 'startTime':''+str(now.hour)+'', 'date':fiveHoursAgo.isoformat(), 'status':'stopped'})
+        stubInstancesToReturn.append({'id':'5','name':'Instance4AlreadyStarted', 'startTime':''+str(now.hour - 1)+'', 'date':fiveHoursAgo.isoformat(), 'status':'running'})
+        stubInstancesToReturn.append({'id':'6','name':'Instance5NoStartTime', 'date':now.isoformat(), 'status':'stopped'})
+        return stubInstancesToReturn
+
+    @mock.patch('wds.aws.ec2.ec2')
+    @mock.patch('wds.aws.ec2.landlord')
+    def test_when_we_get_auto_start_candidates_the_correct_instances_are_returned(self, mock_landlord, mock_ec2):
+        now = datetime.datetime.now()
+        fiveHoursAgo = (datetime.datetime.now() - datetime.timedelta(hours=5))
+
+        ec2.get_all_instances = Mock(return_value=self.getStubStartCandidateInstances())
+        unitInstances = ec2.get_auto_start_candidates()
+
+        self.assertEquals(len(unitInstances), 2)
+        self.assertEquals(unitInstances[0]['id'], '2')
+        self.assertEquals(unitInstances[0]['name'], 'Instance1StoppedAndStartTimePassed')
+        
+        self.assertEquals(unitInstances[1]['id'], '4')
+        self.assertEquals(unitInstances[1]['name'], 'Instance3StoppedAndStartTimeTimeJustPassed')

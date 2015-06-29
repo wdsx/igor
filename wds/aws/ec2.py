@@ -209,3 +209,24 @@ def stop(instance_ids):
         for instance in stoppedInstances:
             instance.add_tags({'AutoStopped': 'True'})
             
+def get_auto_start_candidates():
+    instances = []
+    returned_instances = get_all_instances()
+    currentHour = datetime.datetime.now().hour
+    
+    for instance in returned_instances:        
+        try:
+            state = instance['status']
+            name = instance['name']
+            startTime = int(instance['startTime'])
+            
+            if startTime != 'NA' and startTime <= currentHour and state == 'stopped':
+                print('Going to start instance:'+name)
+                instances.append({'id':instance['id'],
+                                  'name': name,
+                                  'startTime': startTime})
+        except:
+            print('Skipping instance')
+    
+    return instances
+            
