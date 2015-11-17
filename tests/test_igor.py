@@ -108,7 +108,7 @@ class IgorTest(unittest.TestCase):
         igor.deploy(job)
 
         mock_ec2.create_and_start_instances.assert_called_with(project_attributes)
-        mock_loadbalancer.get_loadbalancer.assert_not_called_with(project_attributes)
+        mock_loadbalancer.get_loadbalancer.assert_not_called()
         mock_ec2.terminate.assert_called_with(ids_to_terminate)
         self.assertEquals(JobStatus.done, job.get_status())
         
